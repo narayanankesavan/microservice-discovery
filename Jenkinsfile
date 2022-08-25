@@ -45,7 +45,7 @@ pipeline {
     }
 	stage('Building Docker image') {
       steps{
-	  dir("${env.WORKSPACE}){
+	  dir("${env.WORKSPACE}"){
 		sh "pwd"
 		sh 'sudo docker build -f Dockerfile -t microservice-discovery-service .'
 		}

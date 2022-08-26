@@ -4,6 +4,7 @@ pipeline {
     DOCKERHUB_CREDENTIALS=credentials('dockerhub')
     dockerImage = 'microservice-discovery-service'
     containername = 'microservice-discovery-service'
+    MAIL_TO ='kesavannarayanan@gmail.com,lobomalcon@gmail.com,sangramsahutech@gmail.com,anshulv1401@gmail.com,akshit.baunthy@gmail.com'
   }
   agent {label 'backendapi-java'}
   stages {
@@ -72,12 +73,12 @@ pipeline {
    }
 	post{
         always{
-	    mail to: "kesavannarayanan@gmail.com,narakes1983@gmail.com",
-            subject: "jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
-            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+	    mail to: ${MAIL_TO},
+            subject: "Capston Project-Bankend API-jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"
 	   /*emailext to: "kesavannarayanan@gmail.com",
-            subject: "jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
-            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"*/
+            subject: "Capston Project-Bankend API-jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"*/
         }
     }
  }

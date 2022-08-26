@@ -72,9 +72,12 @@ pipeline {
    }
 	post{
         always{
-	    mail to: "kesavannarayanan@gmail.com",
+	    /*mail to: "kesavannarayanan@gmail.com",
             subject: "Test Email",
-            body: "Test"
+            body: "Test" */
+	   emailext to: "kesavannarayanan@gmail.com,narakes1983@gmail.com",
+            subject: "jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
         }
     }
  }

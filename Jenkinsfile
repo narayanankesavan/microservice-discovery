@@ -1,8 +1,9 @@
 pipeline {
   environment {
-    registry = "gustavoapolinario/docker-test"
-    registryCredential = 'dockerhub'
-    dockerImage = ''
+    registry = "nara1983/jenkinsdockerimage"
+    DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+    dockerImage = 'microservice-discovery-service'
+    containername = 'microservice-discovery-service'
   }
   agent {label 'backendapi-java'}
   stages {
@@ -20,8 +21,8 @@ pipeline {
 	stage('Remove Docker container') {
       steps{
 		script {
-			def contid = sh(script: "sudo docker ps --no-trunc -aqf name=microservice-discovery-service",returnStdout: true)
-            echo "contid: " + "${contid}"
+			def contid = sh(script: "sudo docker ps --no-trunc -aqf name=${containername}",returnStdout: true)
+                        echo "contid: " + "${contid}"
 			if("${contid}" != ''){
 			    sh "echo inside delete container"
 				sh "sudo docker rm -f ${contid}"
@@ -33,11 +34,11 @@ pipeline {
       steps{
 	  dir("${env.WORKSPACE}"){
 		script {
-			def imageExists = sh(script: "sudo docker images -q microservice-discovery-service:latest",returnStdout: true)
+			def imageExists = sh(script: "sudo docker images -q ${registry}:${dockerImage}",returnStdout: true)
             echo "Image Name: " + "${imageExists}"
 			if("${imageExists}" != ''){
 			    sh "echo inside delete block"
-				sh "sudo docker rmi microservice-discovery-service:latest"
+				sh "sudo docker rmi ${imageExists}"
 			}
 		 }
 		}
@@ -47,7 +48,7 @@ pipeline {
       steps{
 	  dir("${env.WORKSPACE}"){
 		sh "pwd"
-		sh 'sudo docker build -f Dockerfile -t microservice-discovery-service .'
+		sh 'sudo docker build -f Dockerfile -t ${registry}:${dockerImage} .'
 		}
       }
     }
@@ -55,8 +56,17 @@ pipeline {
       steps{
 	  script {
 		sh "pwd"
-		sh "sudo docker run -it -d --name microservice-discovery-service -p 8761:8761 microservice-discovery-service:latest"
+		sh "sudo docker run -it -d --name ${containername} -p 8761:8761 ${registry}:${dockerImage}"
 		}
+      }
+    }
+	 stage('Push to Docker Hub') {
+      steps{
+        script {
+          sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+          sh 'docker push $registry:$dockerImage'
+         
+        }
       }
     }
    }

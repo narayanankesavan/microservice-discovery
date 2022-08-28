@@ -1,14 +1,28 @@
 pipeline {
-  environment {
-    registry = "nara1983/jenkinsdockerimage"
-    DOCKERHUB_CREDENTIALS=credentials('dockerhub')
-    dockerImage = 'microservice-discovery-service'
-    containername = 'microservice-discovery-service'
-    MAIL_TO ='kesavannarayanan@gmail.com,lobomalcon@gmail.com,sangramsahutech@gmail.com,anshulv1401@gmail.com,akshit.baunthy@gmail.com'
-  }
-  agent {label 'backendapi-java'}
-  stages {
-	stage('Maven Build') {
+    agent {label 'backendapi-java'}
+    environment {
+        AWS_ACCOUNT_ID="756688684263"
+        AWS_DEFAULT_REGION="us-west-2" 
+	CLUSTER_NAME="discovery-service-cluster"
+	SERVICE_NAME="discovery-service-ecs-service"
+	TASK_DEFINITION_NAME="first-run-task-definition"
+	//DESIRED_COUNT="4"
+	DESIRED_COUNT="2"
+        IMAGE_REPO_NAME="discovery-service-ecr"
+        IMAGE_TAG="${env.BUILD_ID}"
+        //REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+	    REPOSITORY_URI = "public.ecr.aws/f2x2f4b4/discovery-service-ecr"
+	registryCredential = "AWS_ADMIN"
+	// Override HOME to WORKSPACE
+        HOME = "${WORKSPACE}"
+        // or override default cache directory (~/.npm)
+        //NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+		MAIL_TO ='kesavannarayanan@gmail.com,lobomalcon@gmail.com,sangramsahutech@gmail.com,anshulv1401@gmail.com,akshit.baunthy@gmail.com'
+    }
+   
+    stages {
+
+    stage('Maven Build') {
       steps{
         sh 'echo inside maven build'
         sh 'ls -al'
@@ -19,66 +33,36 @@ pipeline {
         }
       }
     }
-	stage('Remove Docker container') {
-      steps{
-		script {
-			def contid = sh(script: "sudo docker ps --no-trunc -aqf name=${containername}",returnStdout: true)
-                        echo "contid: " + "${contid}"
-			if("${contid}" != ''){
-			    sh "echo inside delete container"
-				sh "sudo docker rm -f ${contid}"
-			}
-		 }
-      }
-    }
-	stage('Remove Docker image') {
-      steps{
-	  dir("${env.WORKSPACE}"){
-		script {
-			def imageExists = sh(script: "sudo docker images -q ${registry}:${dockerImage}",returnStdout: true)
-            echo "Image Name: " + "${imageExists}"
-			if("${imageExists}" != ''){
-			    sh "echo inside delete block"
-				sh "sudo docker rmi ${imageExists}"
-			}
-		 }
-		}
-      }
-    }
-	stage('Building Docker image') {
-      steps{
-	  dir("${env.WORKSPACE}"){
-		sh "pwd"
-		sh 'sudo docker build -f Dockerfile -t ${registry}:${dockerImage} .'
-		}
-      }
-    }
-	stage('Run Docker container') {
-      steps{
-	  script {
-		sh "pwd"
-		sh "sudo docker run -it -d --name ${containername} -p 8761:8761 ${registry}:${dockerImage}"
-		}
-      }
-    }
-	 stage('Push to Docker Hub') {
+        
+    // Building Docker images
+    stage('Building Docker image') {
       steps{
         script {
-          sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-          sh 'docker push $registry:$dockerImage'
-         
+          dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
         }
       }
     }
-   }
-	post{
-        always{
-	    mail to:"${MAIL_TO}",
-            subject: "Capstone Project-Bankend API-jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
-            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"
-	   /*emailext to: "kesavannarayanan@gmail.com",
-            subject: "Capston Project-Bankend API-jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
-            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"*/
+   
+    // Uploading Docker images into AWS ECR
+    stage('Pushing to AWS ECR') {
+     steps{  
+         script {
+			docker.withRegistry("https://" + REPOSITORY_URI, "ecr:${AWS_DEFAULT_REGION}:" + registryCredential) {
+                    	dockerImage.push()
+                	}
+         }
         }
+      }
+      
+    stage('Deploy AWS ECS') {
+     steps{
+            withAWS(credentials: registryCredential, region: "${AWS_DEFAULT_REGION}") {
+                script {
+			sh './script.sh'
+                }
+            } 
+        }
+      }      
+      
     }
- }
+}

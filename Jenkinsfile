@@ -12,7 +12,7 @@ pipeline {
         IMAGE_TAG="${env.BUILD_ID}"
         //REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
 	    REPOSITORY_URI = "public.ecr.aws/f2x2f4b4/discovery-service-ecr"
-	registryCredential = "AWS_ADMIN"
+	registryCredential = "awsadmin"
 	// Override HOME to WORKSPACE
         HOME = "${WORKSPACE}"
         // or override default cache directory (~/.npm)

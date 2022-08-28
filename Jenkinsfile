@@ -3,15 +3,15 @@ pipeline {
     environment {
         AWS_ACCOUNT_ID="756688684263"
         AWS_DEFAULT_REGION="us-west-2" 
-	CLUSTER_NAME="discovery-service-cluster"
+	CLUSTER_NAME="discovery-service-cluster-new"
 	SERVICE_NAME="discovery-service-ecs-service"
 	TASK_DEFINITION_NAME="first-run-task-definition"
 	//DESIRED_COUNT="4"
 	DESIRED_COUNT="2"
         IMAGE_REPO_NAME="discovery-service-ecr"
         IMAGE_TAG="${env.BUILD_ID}"
-        //REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
-	    REPOSITORY_URI = "public.ecr.aws/f2x2f4b4/discovery-service-ecr"
+        REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+	   //REPOSITORY_URI = "public.ecr.aws/f2x2f4b4/discovery-service-ecr"
 	registryCredential = "awsadmin"
 	// Override HOME to WORKSPACE
         HOME = "${WORKSPACE}"

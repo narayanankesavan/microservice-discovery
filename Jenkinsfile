@@ -4,7 +4,7 @@ pipeline {
         AWS_ACCOUNT_ID="756688684263"
         AWS_DEFAULT_REGION="us-west-2" 
 	CLUSTER_NAME="discovery-service-cluster-new"
-	SERVICE_NAME="discovery-service-ecs-service"
+	SERVICE_NAME="discovery-service-ecs-service-service"
 	TASK_DEFINITION_NAME="first-run-task-definition"
 	//DESIRED_COUNT="4"
 	DESIRED_COUNT="2"

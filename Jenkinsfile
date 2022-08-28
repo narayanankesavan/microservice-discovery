@@ -66,4 +66,14 @@ pipeline {
       }      
       
     }
+    post{
+        always{
+	    mail to:"${MAIL_TO}",
+            subject: "Capstone Project-Bankend API-jenkins buil-AWS ECR->ECS:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"
+	   /*emailext to: "kesavannarayanan@gmail.com",
+            subject: "Capston Project-Bankend API-jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\n More Info can be found here: ${env.BUILD_URL}"*/
+        }
+    }
 }
